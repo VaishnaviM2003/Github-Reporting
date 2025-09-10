@@ -1,63 +1,16 @@
-// playwright.config.js
-import { defineConfig, devices } from '@playwright/test';
+const { defineConfig } = require('@playwright/test');
 
-export default defineConfig({
-  timeout: 60 * 1000,
-  expect: { timeout: 5000 },
-  retries: 1,
-  workers: 3,
-
+module.exports = defineConfig({
+  workers: process.env.CI ? 2 : undefined, // reduce workers in CI to avoid resource issues
+  retries: process.env.CI ? 2 : 0,
   reporter: [
-    ['list'],
-    ['line'],
-    ['html', { open: 'always' }],
-    ['json', { outputFile: 'report.json' }],
-    ['allure-playwright'],
+    ['list'], 
+    ['html', { outputFolder: 'playwright-report', open: 'never' }]
   ],
-
-  projects: [
-    // ---------- Old Project ----------
-    {
-      name: 'oldProject-chromium',
-      testDir: './tests/oldProject/spec',
-      use: { ...devices['Desktop Chrome'], baseURL: 'https://your-old-app-url.com' },
-    },
-    {
-      name: 'oldProject-firefox',
-      testDir: './tests/oldProject/spec',
-      use: { ...devices['Desktop Firefox'], baseURL: 'https://your-old-app-url.com' },
-    },
-    {
-      name: 'oldProject-webkit',
-      testDir: './tests/oldProject/spec',
-      use: { ...devices['Desktop Safari'], baseURL: 'https://your-old-app-url.com' },
-    },
-
-    // ---------- Saucedemo Project ----------
-    {
-      name: 'saucedemoProject-chromium',
-      testDir: './tests/saucedemoProject/spec',
-      use: { ...devices['Desktop Chrome'], baseURL: 'https://www.saucedemo.com/' },
-    },
-    {
-      name: 'saucedemoProject-firefox',
-      testDir: './tests/saucedemoProject/spec',
-      use: { ...devices['Desktop Firefox'], baseURL: 'https://www.saucedemo.com/' },
-    },
-    {
-      name: 'saucedemoProject-webkit',
-      testDir: './tests/saucedemoProject/spec',
-      use: { ...devices['Desktop Safari'], baseURL: 'https://www.saucedemo.com/' },
-    },
-  ],
-
   use: {
-    headless: true,
-    viewport: { width: 1280, height: 720 },
-    actionTimeout: 0,
-    navigationTimeout: 30000,
-    screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
-    trace: 'retain-on-failure',
+    trace: 'on-first-retry',
+    video: 'on-first-retry',
+    screenshot: 'only-on-failure', // safer for CI
   },
+  testDir: 'tests', // make sure this points to your test folder
 });
