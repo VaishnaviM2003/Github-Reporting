@@ -1,51 +1,35 @@
 name: Playwright Tests
+
+# Trigger workflow on push or pull request to main
 on:
   push:
-    branches: [main, develop]
+    branches: [ main ]
   pull_request:
-    branches: [main]
+    branches: [ main ]
+
 jobs:
-  playwright-tests:
-    timeout-minutes: 60
+  test:
     runs-on: ubuntu-latest
+
     steps:
+      # 1. Checkout the repository
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
+
+      # 2. Setup Node.js
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: 20
+
+      # 3. Install dependencies
       - name: Install dependencies
         run: npm ci
+
+      # 4. Install Playwright browsers
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
-      - name: Install Allure CLI
-        run: npm install allure-playwright --save-dev
-      - name: Install allure commandline
-        run: npm install -g allure-commandline
+
+      # 5. Run Playwright tests in headless mode
       - name: Run Playwright tests
-        run: npx playwright test module4/specs/module4.test.js --project=chromium --reporter=allure-playwright,html
-      - name: Generate Allure Report
-        run: npx allure generate allure-results --clean -o allure-report
-      - name: Upload HTML report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 30
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: test-results
-          path: test-results/
- 
-      - name: Upload Allure report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: allure-report
-          path: allure-report/
-          retention-days: 7
+        run: npx playwright test --reporter=list
