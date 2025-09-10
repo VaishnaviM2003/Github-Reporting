@@ -9,6 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
  
     steps:
       # 1. Checkout the code
@@ -30,11 +31,11 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
  
-      # 5. Run Playwright tests with HTML reporter
+      # 5. Run Playwright tests with reporters
       - name: Run Playwright tests
-        run: npx playwright test --reporter=html
+        run: npm run ci
  
-      # 6. Upload Playwright HTML report as artifact
+      # 6. Upload Playwright HTML report
       - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
@@ -42,3 +43,13 @@ jobs:
           name: playwright-report
           path: playwright-report/
           retention-days: 14
+ 
+      # 7. Upload JUnit test results
+      - name: Upload JUnit test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results/
+          retention-days: 7
+ 
